@@ -56,7 +56,7 @@ namespace VoxelEngine {
 		}
 
 		IEnumerator RenderChunkUpdate(RenderChunk rc) {
-			rc.UpdateRenderChunk(Seed, Variance, Threshold, Scale);
+			rc.GenerateProceduralTerrain(Seed, Variance, Threshold, Scale, 5);
 			//rc.GeneratePerlinNoise(Seed, Scale, Threshold);
 			//rc.GenerateHeightmapTopology(Seed, 10, Scale);
 			rc.RefreshChunkMesh();

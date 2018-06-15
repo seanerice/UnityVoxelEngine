@@ -55,9 +55,11 @@ namespace VoxelEngine {
 			}
 		}
 
-		public void UpdateRenderChunk(int seed, int variance, float threshold, float scale) {
-			if (LowerGlobalCoord.y == 48) GeneratePerlinTerrain(seed, scale, threshold, variance);
-			else if (LowerGlobalCoord.y < 48) GeneratePerlinNoise(seed, scale, threshold);
+		public void GenerateProceduralTerrain(int seed, int variance, float threshold, float scale, int grassThickness) {
+			if (LowerGlobalCoord.y <= 48) {
+				GenerateHeightMapTerrain(seed, scale, threshold, variance);
+				GenerateCaves(seed, scale, threshold);
+			}
 		}
 
 		public int[,] GenerateHeightmapTopology (int seed, int variance, float scale) {
@@ -73,13 +75,13 @@ namespace VoxelEngine {
 			return topologyHeightmap;
 		}
 
-		public void GeneratePerlinNoise (int seed, float scale, float threshold) {
+		public void GenerateCaves (int seed, float scale, float threshold) {
 			for (int x = 0; x < RenderChunkSize.x; x++) {
 				for (int z = 0; z < RenderChunkSize.z; z++) {
 					for (int y = 0; y < RenderChunkSize.y; y++) {
 						Vector3 globalPos = Voxels[x,y,z].GlobalPosition;
 						if (PerlinNoise3D((globalPos.x + 1000 + seed)*scale,(globalPos.y + 1000 + seed) * scale, (globalPos.z + 1000 + seed) * scale) > threshold) {
-							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Stone;
+							Voxels[x, y, z].VoxelType = (int)VoxelTypes.None;
 							//Debug.Log(globalPos);
 						}
 					}
@@ -87,20 +89,23 @@ namespace VoxelEngine {
 			}
 		}
 
-		public void GeneratePerlinTerrain (int seed, float scale, float threshold, int variance, int grassLayerThickness = 5) {
+		public void GenerateHeightMapTerrain (int seed, float scale, float threshold, int variance, int grassLayerThickness = 5) {
 			int[,] topologyHeightMap = GenerateHeightmapTopology(seed, variance, scale);
 			for (int x = 0; x < RenderChunkSize.x; x++) {
 				for (int z = 0; z < RenderChunkSize.z; z++) {
-					for (int y = 0; y < topologyHeightMap[x,z]; y++) {
-						Vector3 globalPos = Voxels[x, y, z].GlobalPosition;
-						if (PerlinNoise3D((globalPos.x + 1000 + seed) * scale, (globalPos.y + 1000 + seed) * scale, (globalPos.z + 1000 + seed) * scale) > threshold) {
+					if (LowerGlobalCoord.y == 48) {
+						for (int y = 0; y < topologyHeightMap[x, z]; y++) {
 							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Stone;
-							//Debug.Log(globalPos);
+						}
+						for (int y = topologyHeightMap[x, z]; y < topologyHeightMap[x, z] + grassLayerThickness; y++) {
+							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Grass;
+						}
+					} else if (LowerGlobalCoord.y < 48){
+						for (int y = 0; y < RenderChunkSize.y; y++) {
+							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Stone;
 						}
 					}
-					for (int y = topologyHeightMap[x,z]; y < topologyHeightMap[x, z]+grassLayerThickness; y++) {
-						Voxels[x, y, z].VoxelType = (int)VoxelTypes.Grass;
-					}
+					
 				}
 			}
 		}

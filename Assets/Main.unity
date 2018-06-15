@@ -339,11 +339,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mat: {fileID: 2100000, guid: f45297108a7c0b8408287ea9a7b5eb6b, type: 2}
-  OrderOfMagnitude: 2
+  OrderOfMagnitude: 8
   Seed: 0
-  Variance: 10
+  Variance: 15
   Scale: 0.05
-  Threshold: 0.4
+  Threshold: 0.6
 --- !u!4 &250456518
 Transform:
   m_ObjectHideFlags: 0
