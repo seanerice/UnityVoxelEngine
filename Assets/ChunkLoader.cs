@@ -23,28 +23,34 @@ namespace VoxelEngine {
 
 		// Private
 		private Chunk[,] Chunks;
-		private Queue<RenderChunk> RenderChunkLoadQueue;
+		private Queue<RenderChunk> LoadRenderChunkQueue;
+		private Queue<RenderChunk> UpdateRenderChunkQueue;
 
 		// Use this for initialization
 		void Start () {
-			RenderChunkLoadQueue = new Queue<RenderChunk>();
+			LoadRenderChunkQueue = new Queue<RenderChunk>();
+			UpdateRenderChunkQueue = new Queue<RenderChunk>();
 			SetChunkSize(OrderOfMagnitude);
 			// Add all renderchunks to the queue for loading
 			List<Vector2> points = GenerateSpiralPoints(OrderOfMagnitude * OrderOfMagnitude);
 			foreach (Vector2 point in points) {
-				RenderChunkLoadQueue.Enqueue(Chunks[(int)point.x, (int)point.y].RenderChunks[3]);
+				LoadRenderChunkQueue.Enqueue(Chunks[(int)point.x, (int)point.y].RenderChunks[3]);
 			}
 			foreach (Vector2 point in points) {
 				for (int i = 2; i >= 0; i--) {
-					RenderChunkLoadQueue.Enqueue(Chunks[(int)point.x, (int)point.y].RenderChunks[i]);
+					LoadRenderChunkQueue.Enqueue(Chunks[(int)point.x, (int)point.y].RenderChunks[i]);
 				}
 			}
 		}
 
 		// Update is called once per frame
 		void Update () {
-			if (RenderChunkLoadQueue.Count > 0) {
-				RenderChunk rc = RenderChunkLoadQueue.Dequeue();
+			if (UpdateRenderChunkQueue.Count > 0) {
+				RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
+				rc.RefreshChunkMesh();
+			}
+			else if (LoadRenderChunkQueue.Count > 0) {
+				RenderChunk rc = LoadRenderChunkQueue.Dequeue();
 				StartCoroutine(RenderChunkUpdate(rc));
 			}
 		}

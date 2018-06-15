@@ -87,7 +87,7 @@ namespace VoxelEngine {
 			}
 		}
 
-		public void GeneratePerlinTerrain (int seed, float scale, float threshold, int variance) {
+		public void GeneratePerlinTerrain (int seed, float scale, float threshold, int variance, int grassLayerThickness = 5) {
 			int[,] topologyHeightMap = GenerateHeightmapTopology(seed, variance, scale);
 			for (int x = 0; x < RenderChunkSize.x; x++) {
 				for (int z = 0; z < RenderChunkSize.z; z++) {
@@ -97,6 +97,9 @@ namespace VoxelEngine {
 							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Stone;
 							//Debug.Log(globalPos);
 						}
+					}
+					for (int y = topologyHeightMap[x,z]; y < topologyHeightMap[x, z]+grassLayerThickness; y++) {
+						Voxels[x, y, z].VoxelType = (int)VoxelTypes.Grass;
 					}
 				}
 			}
