@@ -37,10 +37,12 @@ namespace VoxelEngine {
 
 			LoadNewChunks();
 
-			Vector2[] keys = Chunks.Keys.ToArray();
-			foreach(Vector2 key in keys) {
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[3]);
-			}
+			//Vector2[] keys = Chunks.Keys.ToArray();
+			//foreach(Vector2 key in keys) {
+			//	LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[3]);
+			//	LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[4]);
+			//	LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[5]);
+			//}
 
 			// SetChunkSize(OrderOfMagnitude);
 			// Add all renderchunks to the queue for loading
@@ -93,6 +95,8 @@ namespace VoxelEngine {
 
 			foreach (Vector2 key in newKeys) {
 				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[3]);
+				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[4]);
+				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[5]);
 			}
 		}
 

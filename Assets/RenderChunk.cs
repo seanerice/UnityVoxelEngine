@@ -60,18 +60,21 @@ namespace VoxelEngine {
 			for (int x = 0; x < 16; x++) {
 				for (int y = 0; y < 16; y++) {
 					for (int z = 0; z < 16; z++) {
-						Voxels[x, y, z].VoxelType = Terrain(new Vector3(x, y, z), seed, variance, scale, grassThickness);
+						Voxels[x, y, z].VoxelType = Terrain(new Vector3(x, y, z), seed, variance, scale, grassThickness, threshold);
 					}
 				}
 			}
-
-			if (LowerGlobalCoord.y <= 48) {
-				GenerateHeightMapTerrain(seed, scale, threshold, variance);
-				GenerateCaves(seed, scale, threshold);
-			}
 		}
 
-		public VoxelType Terrain(Vector3 position, int seed, int heightVariance, float scale, int grassThickness) {
+		public VoxelType Terrain(Vector3 localPosition, int seed, int heightVariance, float scale, int grassThickness, float threshold) {
+			Vector3 globalPos = LocalToGlobal(localPosition);
+			int height = (int)(Mathf.PerlinNoise((globalPos.x + 1000 + seed) * scale, (globalPos.z + 1000 + seed) * scale) * heightVariance) + 48;
+			if (globalPos.y >= height && globalPos.y <= height + grassThickness) {
+				return VoxelType.Grass;
+			} else if (globalPos.y < height) {
+				return VoxelType.Stone;
+				// Stone, caves, ores
+			}
 			return VoxelType.None;
 		}
 
