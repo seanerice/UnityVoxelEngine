@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 
 namespace VoxelEngine {
-	enum VoxelTypes : int {
+	public enum VoxelType : int {
 		None,
 		Grass,
 		Stone

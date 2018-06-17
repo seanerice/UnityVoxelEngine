@@ -15,7 +15,7 @@ namespace VoxelEngine {
 			for (int x = 0; x < 16; x++) {
 				for (int y = 0; y < 16; y++) {
 					for (int z = 0; z < 16; z++) {
-						if (voxels[x, y, z].VoxelType != (int)VoxelTypes.None) {
+						if (voxels[x, y, z].VoxelType != VoxelType.None) {
 							if (renderVoxel[x, y, z].left) meshGenerator.AddLeftFace(x, y, z, voxels[x, y, z].VoxelType);
 							if (renderVoxel[x, y, z].right) meshGenerator.AddRightFace(x, y, z, voxels[x, y, z].VoxelType);
 							if (renderVoxel[x, y, z].up) meshGenerator.AddTopFace(x, y, z, voxels[x, y, z].VoxelType);
@@ -37,17 +37,17 @@ namespace VoxelEngine {
 				for (int y = 0; y < 16; y++) {
 					for (int z = 0; z < 16; z++) {
 						voxelIsRendered[x, y, z] = new OccludeCube();
-						if (x > 0 && voxels[x-1,y,z].VoxelType != (int)VoxelTypes.None)			// Left
+						if (x > 0 && voxels[x-1,y,z].VoxelType != (int)VoxelType.None)			// Left
 							voxelIsRendered[x, y, z].left = false;
-						if (x < 15 && voxels[x + 1, y, z].VoxelType != (int)VoxelTypes.None)		// Right
+						if (x < 15 && voxels[x + 1, y, z].VoxelType != (int)VoxelType.None)		// Right
 							voxelIsRendered[x, y, z].right = false;
-						if (y > 0 && voxels[x, y - 1, z].VoxelType != (int)VoxelTypes.None) 
+						if (y > 0 && voxels[x, y - 1, z].VoxelType != (int)VoxelType.None) 
 							voxelIsRendered[x, y, z].down = false;
-						if (y < 15 && voxels[x, y + 1, z].VoxelType != (int)VoxelTypes.None)
+						if (y < 15 && voxels[x, y + 1, z].VoxelType != (int)VoxelType.None)
 							voxelIsRendered[x, y, z].up = false;
-						if (z > 0 && voxels[x, y, z - 1].VoxelType != (int)VoxelTypes.None)
+						if (z > 0 && voxels[x, y, z - 1].VoxelType != (int)VoxelType.None)
 							voxelIsRendered[x, y, z].back = false;
-						if (z < 15 && voxels[x, y, z + 1].VoxelType != (int)VoxelTypes.None)
+						if (z < 15 && voxels[x, y, z + 1].VoxelType != (int)VoxelType.None)
 							voxelIsRendered[x, y, z].front = false;
 					}
 				}

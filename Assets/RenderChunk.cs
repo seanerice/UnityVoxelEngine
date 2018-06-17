@@ -37,6 +37,7 @@ namespace VoxelEngine {
 			mc.sharedMesh = mesh;
 			mf.mesh = mesh;
 			mr.material = mat;
+			Shader sh = go.GetComponent<Shader>();
 
 			GameObject.Destroy(RenderObject);
 			RenderObject = go;
@@ -47,7 +48,7 @@ namespace VoxelEngine {
 				for (int y = 0; y < RenderChunkSize.y; y++) {
 					for (int z = 0; z < RenderChunkSize.z; z++) {
 						Voxels[x, y, z] = new Voxel();
-						Voxels[x, y, z].VoxelType = (int)VoxelTypes.None;
+						Voxels[x, y, z].VoxelType = (int)VoxelType.None;
 						Voxels[x, y, z].GlobalPosition = LowerGlobalCoord + new Vector3(x, y, z);
 						Voxels[x, y, z].LocalPosition = new Vector3(x, y, z);
 					}
@@ -56,10 +57,22 @@ namespace VoxelEngine {
 		}
 
 		public void GenerateProceduralTerrain(int seed, int variance, float threshold, float scale, int grassThickness) {
+			for (int x = 0; x < 16; x++) {
+				for (int y = 0; y < 16; y++) {
+					for (int z = 0; z < 16; z++) {
+						Voxels[x, y, z].VoxelType = Terrain(new Vector3(x, y, z), seed, variance, scale, grassThickness);
+					}
+				}
+			}
+
 			if (LowerGlobalCoord.y <= 48) {
 				GenerateHeightMapTerrain(seed, scale, threshold, variance);
 				GenerateCaves(seed, scale, threshold);
 			}
+		}
+
+		public VoxelType Terrain(Vector3 position, int seed, int heightVariance, float scale, int grassThickness) {
+			return VoxelType.None;
 		}
 
 		public int[,] GenerateHeightmapTopology (int seed, int variance, float scale) {
@@ -69,7 +82,7 @@ namespace VoxelEngine {
 					Vector3 globalPos = LocalToGlobal(new Vector3(x, 0, z));
 					int height = (int)(Mathf.PerlinNoise((globalPos.x + 1000 + seed) * scale, (globalPos.z + 1000 + seed) * scale) * variance);
 					topologyHeightmap[x, z] = height;
-					Voxels[x, height, z].VoxelType = (int)VoxelTypes.Grass;
+					Voxels[x, height, z].VoxelType = VoxelType.Grass;
 				}
 			}
 			return topologyHeightmap;
@@ -81,7 +94,7 @@ namespace VoxelEngine {
 					for (int y = 0; y < RenderChunkSize.y; y++) {
 						Vector3 globalPos = Voxels[x,y,z].GlobalPosition;
 						if (PerlinNoise3D((globalPos.x + 1000 + seed)*scale,(globalPos.y + 1000 + seed) * scale, (globalPos.z + 1000 + seed) * scale) > threshold) {
-							Voxels[x, y, z].VoxelType = (int)VoxelTypes.None;
+							Voxels[x, y, z].VoxelType = (int)VoxelType.None;
 							//Debug.Log(globalPos);
 						}
 					}
@@ -95,14 +108,14 @@ namespace VoxelEngine {
 				for (int z = 0; z < RenderChunkSize.z; z++) {
 					if (LowerGlobalCoord.y == 48) {
 						for (int y = 0; y < topologyHeightMap[x, z]; y++) {
-							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Stone;
+							Voxels[x, y, z].VoxelType = VoxelType.Stone;
 						}
 						for (int y = topologyHeightMap[x, z]; y < topologyHeightMap[x, z] + grassLayerThickness; y++) {
-							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Grass;
+							Voxels[x, y, z].VoxelType = VoxelType.Grass;
 						}
 					} else if (LowerGlobalCoord.y < 48){
 						for (int y = 0; y < RenderChunkSize.y; y++) {
-							Voxels[x, y, z].VoxelType = (int)VoxelTypes.Stone;
+							Voxels[x, y, z].VoxelType = VoxelType.Stone;
 						}
 					}
 					

@@ -59,6 +59,7 @@ namespace VoxelEngine {
 
 		public Mesh GenerateMesh() {
 			Mesh mesh = new Mesh();
+			RemoveDuplicateVerts();
 			mesh.vertices = VertexList.ToArray();
 			mesh.normals = NormalList.ToArray();
 			mesh.uv = UVList.ToArray();
@@ -67,7 +68,11 @@ namespace VoxelEngine {
 			return mesh;
 		}
 
-		public void AddLeftFace(int x, int y, int z, int vt) {
+		public void RemoveDuplicateVerts () {
+
+		}
+
+		public void AddLeftFace(int x, int y, int z, VoxelType vt) {
 			Vector3 localPos = new Vector3(x, y, z);
 			VertexList.Add(p7 + localPos);
 			VertexList.Add(p4 + localPos);
@@ -81,10 +86,10 @@ namespace VoxelEngine {
 
 			Vector2 uvLower = VoxelUVs.Stone;
 			switch(vt) {
-				case (int)VoxelTypes.Grass:
+				case VoxelType.Grass:
 					uvLower = VoxelUVs.GrassSide;
 					break;
-				case (int)VoxelTypes.Stone:
+				case VoxelType.Stone:
 					uvLower = VoxelUVs.Stone;
 					break;
 				default:
@@ -107,7 +112,7 @@ namespace VoxelEngine {
 			NumSides++;
 		}
 
-		public void AddRightFace (int x, int y, int z, int vt) {
+		public void AddRightFace (int x, int y, int z, VoxelType vt) {
 			Vector3 localPos = new Vector3(x, y, z);
 			VertexList.Add(p5 + localPos);
 			VertexList.Add(p6 + localPos);
@@ -121,10 +126,10 @@ namespace VoxelEngine {
 
 			Vector2 uvLower = VoxelUVs.Stone;
 			switch (vt) {
-				case (int)VoxelTypes.Grass:
+				case VoxelType.Grass:
 					uvLower = VoxelUVs.GrassSide;
 					break;
-				case (int)VoxelTypes.Stone:
+				case VoxelType.Stone:
 					uvLower = VoxelUVs.Stone;
 					break;
 				default:
@@ -147,7 +152,7 @@ namespace VoxelEngine {
 			NumSides++;
 		}
 
-		public void AddTopFace (int x, int y, int z, int vt) {
+		public void AddTopFace (int x, int y, int z, VoxelType vt) {
 			Vector3 localPos = new Vector3(x, y, z);
 			VertexList.Add(p7 + localPos);
 			VertexList.Add(p6 + localPos);
@@ -161,10 +166,10 @@ namespace VoxelEngine {
 
 			Vector2 uvLower = VoxelUVs.Stone;
 			switch (vt) {
-				case (int)VoxelTypes.Grass:
+				case VoxelType.Grass:
 					uvLower = VoxelUVs.GrassTop;
 					break;
-				case (int)VoxelTypes.Stone:
+				case VoxelType.Stone:
 					uvLower = VoxelUVs.Stone;
 					break;
 				default:
@@ -187,7 +192,7 @@ namespace VoxelEngine {
 			NumSides++;
 		}
 
-		public void AddBottomFace (int x, int y, int z, int vt) {
+		public void AddBottomFace (int x, int y, int z, VoxelType vt) {
 			Vector3 localPos = new Vector3(x, y, z);
 			VertexList.Add(p0 + localPos);
 			VertexList.Add(p1 + localPos);
@@ -201,10 +206,10 @@ namespace VoxelEngine {
 
 			Vector2 uvLower = VoxelUVs.Stone;
 			switch (vt) {
-				case (int)VoxelTypes.Grass:
+				case VoxelType.Grass:
 					uvLower = VoxelUVs.Dirt;
 					break;
-				case (int)VoxelTypes.Stone:
+				case VoxelType.Stone:
 					uvLower = VoxelUVs.Stone;
 					break;
 				default:
@@ -227,7 +232,7 @@ namespace VoxelEngine {
 			NumSides++;
 		}
 
-		public void AddFrontFace (int x, int y, int z, int vt) {
+		public void AddFrontFace (int x, int y, int z, VoxelType vt) {
 			Vector3 localPos = new Vector3(x, y, z);
 			VertexList.Add(p4 + localPos);
 			VertexList.Add(p5 + localPos);
@@ -241,10 +246,10 @@ namespace VoxelEngine {
 
 			Vector2 uvLower = VoxelUVs.Stone;
 			switch (vt) {
-				case (int)VoxelTypes.Grass:
+				case VoxelType.Grass:
 					uvLower = VoxelUVs.GrassSide;
 					break;
-				case (int)VoxelTypes.Stone:
+				case VoxelType.Stone:
 					uvLower = VoxelUVs.Stone;
 					break;
 				default:
@@ -267,7 +272,7 @@ namespace VoxelEngine {
 			NumSides++;
 		}
 
-		public void AddBackFace (int x, int y, int z, int vt) {
+		public void AddBackFace (int x, int y, int z, VoxelType vt) {
 			Vector3 localPos = new Vector3(x, y, z);
 			VertexList.Add(p6 + localPos);
 			VertexList.Add(p7 + localPos);
@@ -281,10 +286,10 @@ namespace VoxelEngine {
 
 			Vector2 uvLower = VoxelUVs.Stone;
 			switch (vt) {
-				case (int)VoxelTypes.Grass:
+				case VoxelType.Grass:
 					uvLower = VoxelUVs.GrassSide;
 					break;
-				case (int)VoxelTypes.Stone:
+				case VoxelType.Stone:
 					uvLower = VoxelUVs.Stone;
 					break;
 				default:
