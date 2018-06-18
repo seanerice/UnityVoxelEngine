@@ -435,9 +435,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mat: {fileID: 2100000, guid: f45297108a7c0b8408287ea9a7b5eb6b, type: 2}
   OrderOfMagnitude: 1
-  RenderDistance: 4
+  RenderDistance: 8
   Seed: 0
-  Variance: 50
+  Variance: 48
   Scale: 0.01
   Threshold: 0.6
 --- !u!1 &164026143

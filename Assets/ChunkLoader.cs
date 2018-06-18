@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Threading;
 
 /* Load chunks in on demand.
  * Chunk loading only happens when neccessarry, and updating RenderChunks happens only for 
@@ -65,14 +66,16 @@ namespace VoxelEngine {
 				LoadNewChunks();
 				CenterChunkPos = currentChunkPos;
 			}
-
-			if (UpdateRenderChunkQueue.Count > 0) {						// Existing chunks
-				RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
+	
+			if (LoadRenderChunkQueue.Count > 0) {                   // New chunks
+				RenderChunk rc = LoadRenderChunkQueue.Dequeue();
+				rc.GenerateProceduralTerrain(Seed, Variance, Threshold, Scale, 5);
+				rc.InitializeGameObject(mat);
 				rc.RefreshChunkMesh();
 			}
-			else if (LoadRenderChunkQueue.Count > 0) {					// New chunks
-				RenderChunk rc = LoadRenderChunkQueue.Dequeue();
-				StartCoroutine(RenderChunkUpdate(rc));
+			if (UpdateRenderChunkQueue.Count > 0) {                     // Existing chunks
+				RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
+				rc.RefreshChunkMesh();
 			}
 
 
@@ -98,15 +101,19 @@ namespace VoxelEngine {
 				Debug.Log(chunkPos);
 			}
 
+
+
 			foreach (Vector2 key in newKeys) {
 				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[3]);
 				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[4]);
 				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[5]);
+				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[2]);
+				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[1]);
+				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[0]);
 			}
 
 			foreach (Vector2 key in existingKeys) {
 				DestroyOldChunk(key);
-				LoadRenderChunkQueue.
 			}
 		}
 
@@ -116,15 +123,6 @@ namespace VoxelEngine {
 				chunk.Destroy();
 				Chunks.Remove(chunkPos);
 			}
-		}
-
-		IEnumerator RenderChunkUpdate(RenderChunk rc) {
-			rc.GenerateProceduralTerrain(Seed, Variance, Threshold, Scale, 5);
-			//rc.GeneratePerlinNoise(Seed, Scale, Threshold);
-			//rc.GenerateHeightmapTopology(Seed, 10, Scale);
-			rc.RefreshChunkMesh();
-			rc.InitializeGameObject(mat);
-			yield return 0;
 		}
 
 		//public void SetChunkSize(float o) {
@@ -161,10 +159,6 @@ namespace VoxelEngine {
 				}
 				magnitude++;
 			}
-		}
-
-		public List<Vector2> GenerateBFSPoints(int sizex, int sizey, int startx, int starty) {
-
 		}
 
 		public Vector2 GlobalPosToChunkCoord(Vector3 globalPos) {

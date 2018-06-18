@@ -13,7 +13,9 @@ namespace VoxelEngine {
 		private Vector3 RenderChunkSize = new Vector3(16, 16, 16);
 		private Voxel[,,] Voxels;
 		public GameObject RenderObject;
-		private Mesh RenderMesh;
+		private Mesh RenderMesh = new Mesh();
+		private MeshFilter MeshFilt;
+		private MeshCollider MeshColl;
 
 		public bool MarkedForDestruction { get; set; }
 
@@ -27,18 +29,23 @@ namespace VoxelEngine {
 		}
 
 		public void RefreshChunkMesh () {
-			mesh = MeshEditor.MeshFromVoxel16x16x16(Voxels);
+			if (!MarkedForDestruction) {
+				mesh = MeshEditor.MeshFromVoxel16x16x16(Voxels);
+				MeshFilt.mesh = mesh;
+				MeshColl.sharedMesh = mesh;
+			}
 		}
 
 		public void InitializeGameObject (Material mat) {
 			if (!MarkedForDestruction) { 
 				GameObject go = new GameObject("Chunk");
 				go.transform.position = LowerGlobalCoord;
-				MeshFilter mf = go.AddComponent<MeshFilter>();
+				MeshFilt = go.AddComponent<MeshFilter>();
 				MeshRenderer mr = go.AddComponent<MeshRenderer>();
-				MeshCollider mc = go.AddComponent<MeshCollider>();
-				mc.sharedMesh = mesh;
-				mf.mesh = mesh;
+				MeshColl = go.AddComponent<MeshCollider>();
+
+				MeshColl.sharedMesh = mesh;
+				MeshFilt.mesh = mesh;
 				mr.material = mat;
 				Shader sh = go.GetComponent<Shader>();
 				GameObject.Destroy(RenderObject);
