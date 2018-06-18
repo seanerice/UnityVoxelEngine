@@ -15,6 +15,8 @@ namespace VoxelEngine {
 		public GameObject RenderObject;
 		private Mesh RenderMesh;
 
+		public bool MarkedForDestruction { get; set; }
+
 		// Constructor
 		public RenderChunk (Vector3 lowerCoord) {
 			// Field initialization
@@ -29,18 +31,19 @@ namespace VoxelEngine {
 		}
 
 		public void InitializeGameObject (Material mat) {
-			GameObject go = new GameObject("Chunk");
-			go.transform.position = LowerGlobalCoord;
-			MeshFilter mf = go.AddComponent<MeshFilter>();
-			MeshRenderer mr = go.AddComponent<MeshRenderer>();
-			MeshCollider mc = go.AddComponent<MeshCollider>();
-			mc.sharedMesh = mesh;
-			mf.mesh = mesh;
-			mr.material = mat;
-			Shader sh = go.GetComponent<Shader>();
-
-			GameObject.Destroy(RenderObject);
-			RenderObject = go;
+			if (!MarkedForDestruction) { 
+				GameObject go = new GameObject("Chunk");
+				go.transform.position = LowerGlobalCoord;
+				MeshFilter mf = go.AddComponent<MeshFilter>();
+				MeshRenderer mr = go.AddComponent<MeshRenderer>();
+				MeshCollider mc = go.AddComponent<MeshCollider>();
+				mc.sharedMesh = mesh;
+				mf.mesh = mesh;
+				mr.material = mat;
+				Shader sh = go.GetComponent<Shader>();
+				GameObject.Destroy(RenderObject);
+				RenderObject = go;
+			}
 		}
 
 		public void InitializeEmptyVoxels () {

@@ -35,6 +35,7 @@ namespace VoxelEngine {
 			LoadRenderChunkQueue = new Queue<RenderChunk>();
 			UpdateRenderChunkQueue = new Queue<RenderChunk>();
 
+
 			LoadNewChunks();
 
 			//Vector2[] keys = Chunks.Keys.ToArray();
@@ -62,7 +63,6 @@ namespace VoxelEngine {
 			Vector2 currentChunkPos = GlobalPosToChunkCoord(transform.position);
 			if (currentChunkPos != CenterChunkPos) {
 				LoadNewChunks();
-				DestroyOldChunks();
 				CenterChunkPos = currentChunkPos;
 			}
 
@@ -79,18 +79,23 @@ namespace VoxelEngine {
 		}
 
 		void LoadNewChunks() {
+			Debug.Log(GlobalPosToChunkCoord(transform.position));
+			Vector2[] spiralPoints = GenerateSpiralPoints(((RenderDistance-1)*2+1) * ((RenderDistance - 1) * 2 + 1)).ToArray();
 			List<Vector2> existingKeys = Chunks.Keys.ToList();
 			List<Vector2> newKeys = new List<Vector2>();
-			for (int x = -RenderDistance + 1; x < RenderDistance; x++) {
-				for (int y = -RenderDistance + 1; y < RenderDistance; y++) {
-					Vector2 chunkPos = GlobalPosToChunkCoord(transform.position) + new Vector2(x, y);
-					if (!existingKeys.Contains(chunkPos)) {
-						Debug.Log(chunkPos);
-						Vector3 lowerCoord = new Vector3(chunkPos.x * 16, 0, chunkPos.y * 16);
-						Chunks.Add(chunkPos, new Chunk(lowerCoord));
-						newKeys.Add(chunkPos);
-					}
+
+			Vector2 offset = new Vector2(-RenderDistance + 1, -RenderDistance + 1);
+			foreach (Vector2 index in spiralPoints) {
+				Chunk chunk;
+				Vector2 chunkPos = GlobalPosToChunkCoord(transform.position) + index + offset;
+				if (!Chunks.TryGetValue(chunkPos, out chunk)) {
+					Vector3 lowerCoord = new Vector3(chunkPos.x * 16, 0, chunkPos.y * 16);
+					Chunks.Add(chunkPos, new Chunk(lowerCoord));
+					newKeys.Add(chunkPos);
+				} else {
+					existingKeys.Remove(chunkPos);
 				}
+				Debug.Log(chunkPos);
 			}
 
 			foreach (Vector2 key in newKeys) {
@@ -98,10 +103,19 @@ namespace VoxelEngine {
 				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[4]);
 				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[5]);
 			}
+
+			foreach (Vector2 key in existingKeys) {
+				DestroyOldChunk(key);
+				LoadRenderChunkQueue.
+			}
 		}
 
-		void DestroyOldChunks () {
-
+		public void DestroyOldChunk(Vector2 chunkPos) {
+			Chunk chunk;
+			if (Chunks.TryGetValue(chunkPos, out chunk)) {
+				chunk.Destroy();
+				Chunks.Remove(chunkPos);
+			}
 		}
 
 		IEnumerator RenderChunkUpdate(RenderChunk rc) {
@@ -129,7 +143,7 @@ namespace VoxelEngine {
 		public List<Vector2> GenerateSpiralPoints(int points) {
 			List<Vector2> fin = new List<Vector2>();
 			Vector2[] directions = {Vector2.right, Vector2.up, Vector2.left, Vector2.down };
-			Vector2 center = new Vector2((int)Mathf.Sqrt(points) / 2 - 1, (int)Mathf.Sqrt(points) / 2 - 1);
+			Vector2 center = new Vector2((int)Mathf.Sqrt(points) / 2, (int)Mathf.Sqrt(points) / 2);
 			fin.Add(center);
 			int magnitude = 1;
 			int direction = 0;
@@ -138,7 +152,7 @@ namespace VoxelEngine {
 				for (int mi = 0; mi < 2; mi++) {
 					for (int magi = 0; magi < magnitude; magi++) {
 						center = center + directions[direction];
-						Debug.Log(center);
+						//Debug.Log(center);
 						fin.Add(center);
 						i++;
 						if (i == points-1) return fin;
@@ -147,6 +161,10 @@ namespace VoxelEngine {
 				}
 				magnitude++;
 			}
+		}
+
+		public List<Vector2> GenerateBFSPoints(int sizex, int sizey, int startx, int starty) {
+
 		}
 
 		public Vector2 GlobalPosToChunkCoord(Vector3 globalPos) {

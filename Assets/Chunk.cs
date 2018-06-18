@@ -21,5 +21,12 @@ namespace VoxelEngine {
 		public RenderChunk GetRenderChunkByCoord(Vector3 coord) {
 			return RenderChunks[(int)coord.y / numRenderChunks];
 		}
+
+		public void Destroy() {
+			foreach (RenderChunk rc in RenderChunks) {
+				GameObject.Destroy(rc.RenderObject);
+				rc.MarkedForDestruction = true;
+			}
+		}
 	}
 }
