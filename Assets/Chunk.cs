@@ -24,6 +24,7 @@ namespace VoxelEngine {
 
 		public void Destroy() {
 			foreach (RenderChunk rc in RenderChunks) {
+				Mesh.Destroy(rc.RenderMesh);
 				GameObject.Destroy(rc.RenderObject);
 				rc.MarkedForDestruction = true;
 			}

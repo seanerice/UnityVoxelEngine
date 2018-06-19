@@ -6,14 +6,13 @@ using UnityEngine;
 
 namespace VoxelEngine {
 	public class RenderChunk {
-		public Mesh mesh { get; set; }
 		public readonly Vector3 LowerGlobalCoord;
 
 		// Private
 		private Vector3 RenderChunkSize = new Vector3(16, 16, 16);
 		private Voxel[,,] Voxels;
 		public GameObject RenderObject;
-		private Mesh RenderMesh = new Mesh();
+		public Mesh RenderMesh = new Mesh();
 		private MeshFilter MeshFilt;
 		private MeshCollider MeshColl;
 
@@ -30,9 +29,10 @@ namespace VoxelEngine {
 
 		public void RefreshChunkMesh () {
 			if (!MarkedForDestruction) {
-				mesh = MeshEditor.MeshFromVoxel16x16x16(Voxels);
-				MeshFilt.mesh = mesh;
-				MeshColl.sharedMesh = mesh;
+				Mesh.Destroy(RenderMesh);
+				RenderMesh = MeshEditor.MeshFromVoxel16x16x16(Voxels);
+				MeshFilt.mesh = RenderMesh;
+				MeshColl.sharedMesh = RenderMesh;
 			}
 		}
 
@@ -44,8 +44,8 @@ namespace VoxelEngine {
 				MeshRenderer mr = go.AddComponent<MeshRenderer>();
 				MeshColl = go.AddComponent<MeshCollider>();
 
-				MeshColl.sharedMesh = mesh;
-				MeshFilt.mesh = mesh;
+				MeshColl.sharedMesh = RenderMesh;
+				MeshFilt.mesh = RenderMesh;
 				mr.material = mat;
 				Shader sh = go.GetComponent<Shader>();
 				GameObject.Destroy(RenderObject);
