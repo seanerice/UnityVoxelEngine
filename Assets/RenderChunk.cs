@@ -23,6 +23,7 @@ namespace VoxelEngine {
 			// Field initialization
 			RenderChunkSize = new Vector3(16, 16, 16);
 			LowerGlobalCoord = lowerCoord;
+            Debug.Log(LowerGlobalCoord);
 			Voxels = new Voxel[(int)RenderChunkSize.x, (int)RenderChunkSize.y, (int)RenderChunkSize.z];
 			InitializeEmptyVoxels();
 		}
@@ -59,7 +60,7 @@ namespace VoxelEngine {
 					for (int z = 0; z < RenderChunkSize.z; z++) {
 						Voxels[x, y, z] = new Voxel();
 						Voxels[x, y, z].VoxelType = (int)VoxelType.None;
-						Voxels[x, y, z].GlobalPosition = LowerGlobalCoord + new Vector3(x, y, z);
+						Voxels[x, y, z].GlobalPosition = new Vector3(LowerGlobalCoord.x + x, LowerGlobalCoord.y + y, LowerGlobalCoord.z + z);
 						Voxels[x, y, z].LocalPosition = new Vector3(x, y, z);
 					}
 				}
@@ -136,9 +137,44 @@ namespace VoxelEngine {
 			}
 		}
 
+        public bool AddBlock(Vector3 globalPosition, VoxelType voxelType)
+        {
+            Vector3 local = GlobalToIndex(globalPosition);
+            if (local.x >= 0 && local.x < 16 && local.y >= 0 && local.y < 16 && local.z >= 0 && local.z < 16 && voxelType != VoxelType.None)    // Must be valid index, valid voxeltype
+            {
+                if (Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType == VoxelType.None)                                               // Add to only a null voxel
+                {
+                    Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType = voxelType;
+                    return true;
+                }   
+            }
+            return false;
+        }
+
+        public bool RemoveBlock(Vector3 globalPosition)
+        {
+            Vector3 local = GlobalToIndex(globalPosition);
+            //Debug.Log(local);
+            if (local.x >= 0 && local.x < 16 && local.y >= 0 && local.y < 16 && local.z >= 0 && local.z < 16)   // Valix index
+            {
+                if (Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType != VoxelType.None)               // Remove from a non-null voxel.
+                {
+                    Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType = VoxelType.None;
+                    return true;
+                }
+            }
+            return false;
+        }
+
 		public Vector3 LocalToGlobal (Vector3 local) {
 			return local + LowerGlobalCoord;
 		}
+
+        public Vector3 GlobalToIndex(Vector3 globalPos)
+        {
+            //Debug.Log(LowerGlobalCoord);
+            return globalPos - LowerGlobalCoord;
+        }
 
 		public Voxel GetVoxel (int x, int y, int z) {
 			try {

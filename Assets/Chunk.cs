@@ -19,7 +19,8 @@ namespace VoxelEngine {
 		}
 
 		public RenderChunk GetRenderChunkByCoord(Vector3 coord) {
-			return RenderChunks[(int)coord.y / numRenderChunks];
+            Debug.Log((int)coord.y / 16);
+			return RenderChunks[(int)coord.y / 16];
 		}
 
 		public void Destroy() {

@@ -28,7 +28,6 @@ namespace VoxelEngine {
 		private Queue<RenderChunk> UpdateRenderChunkQueue;
 		private Vector2 CenterChunkPos;
 
-		// Use this for initialization
 		void Start () {
 			CenterChunkPos = GlobalPosToChunkCoord(transform.position);
 			Chunks = new Dictionary<Vector2, Chunk>();
@@ -36,28 +35,8 @@ namespace VoxelEngine {
 			UpdateRenderChunkQueue = new Queue<RenderChunk>();
 
 			LoadNewChunks();
-
-			//Vector2[] keys = Chunks.Keys.ToArray();
-			//foreach(Vector2 key in keys) {
-			//	LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[3]);
-			//	LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[4]);
-			//	LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[5]);
-			//}
-
-			// SetChunkSize(OrderOfMagnitude);
-			// Add all renderchunks to the queue for loading
-			//List<Vector2> points = GenerateSpiralPoints(OrderOfMagnitude * OrderOfMagnitude);
-			//foreach (Vector2 point in points) {
-			//	LoadRenderChunkQueue.Enqueue(Chunks[(int)point.x, (int)point.y].RenderChunks[3]);
-			//}
-			//foreach (Vector2 point in points) {
-			//	for (int i = 2; i >= 0; i--) {
-			//		LoadRenderChunkQueue.Enqueue(Chunks[(int)point.x, (int)point.y].RenderChunks[i]);
-			//	}
-			//}
 		}
 
-		// Update is called once per frame
 		void Update () {
 
 			Vector2 currentChunkPos = GlobalPosToChunkCoord(transform.position);
@@ -66,7 +45,7 @@ namespace VoxelEngine {
 				CenterChunkPos = currentChunkPos;
 			}
 
-			if (LoadRenderChunkQueue.Count > 0) {                   // New chunks
+			if (LoadRenderChunkQueue.Count > 0) {                       // New chunks
 				RenderChunk rc = LoadRenderChunkQueue.Dequeue();
 				rc.GenerateProceduralTerrain(Seed, Variance, Threshold, Scale, 5);
 				rc.InitializeGameObject(mat);
@@ -77,13 +56,14 @@ namespace VoxelEngine {
 			if (UpdateRenderChunkQueue.Count > 0) {                     // Existing chunks
 				RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
 				rc.RefreshChunkMesh();
+                //Debug.Log("Refreshed renderchunk");
 			}
 
 
 		}
 
 		void LoadNewChunks() {
-			Debug.Log(GlobalPosToChunkCoord(transform.position));
+			//Debug.Log(GlobalPosToChunkCoord(transform.position));
 			Vector2[] spiralPoints = GenerateSpiralPoints(((RenderDistance-1)*2+1) * ((RenderDistance - 1) * 2 + 1)).ToArray();
 			List<Vector2> existingKeys = Chunks.Keys.ToList();
 			List<Vector2> newKeys = new List<Vector2>();
@@ -139,7 +119,33 @@ namespace VoxelEngine {
 		//	}
 		//}
 
-		public List<Vector2> GenerateSpiralPoints(int points) {
+        public bool AddBlock(Vector3 globalPos, VoxelType voxelType)
+        {
+            Vector2 chunkPos = GlobalPosToChunkCoord(globalPos);
+            Chunk chunk = Chunks[chunkPos];
+            RenderChunk renderChunk = chunk.GetRenderChunkByCoord(globalPos);
+            if (renderChunk.AddBlock(globalPos, voxelType))
+            {
+                UpdateRenderChunkQueue.Enqueue(renderChunk);
+                return true;
+            }
+            return false;
+        }
+
+        public bool RemoveBlock(Vector3 globalPos)
+        {
+            Vector2 chunkPos = GlobalPosToChunkCoord(globalPos);
+            Chunk chunk = Chunks[chunkPos];
+            RenderChunk renderChunk = chunk.GetRenderChunkByCoord(globalPos);
+            if (renderChunk.RemoveBlock(globalPos))
+            {
+                UpdateRenderChunkQueue.Enqueue(renderChunk);
+                return true;
+            }
+            return false;
+        }
+
+        public List<Vector2> GenerateSpiralPoints(int points) {
 			List<Vector2> fin = new List<Vector2>();
 			Vector2[] directions = {Vector2.right, Vector2.up, Vector2.left, Vector2.down };
 			Vector2 center = new Vector2((int)Mathf.Sqrt(points) / 2, (int)Mathf.Sqrt(points) / 2);
