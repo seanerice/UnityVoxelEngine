@@ -12,7 +12,6 @@ using System.Threading;
  * There are several functions designed to retrieve appropriate RenderChunks for update.
  */
 namespace VoxelEngine {
-	[RequireComponent(typeof(ChunkLoaderUIHandler))]
 	class ChunkLoader : MonoBehaviour {
 		// Public
 		public Material mat;
@@ -28,7 +27,6 @@ namespace VoxelEngine {
 		private Queue<RenderChunk> LoadRenderChunkQueue;
 		private Queue<RenderChunk> UpdateRenderChunkQueue;
 		private Vector2 CenterChunkPos;
-		private ChunkLoaderUIHandler UIHandler;
 
 		// Use this for initialization
 		void Start () {
@@ -36,7 +34,6 @@ namespace VoxelEngine {
 			Chunks = new Dictionary<Vector2, Chunk>();
 			LoadRenderChunkQueue = new Queue<RenderChunk>();
 			UpdateRenderChunkQueue = new Queue<RenderChunk>();
-			UIHandler = gameObject.GetComponent<ChunkLoaderUIHandler>();
 
 			LoadNewChunks();
 
@@ -62,7 +59,6 @@ namespace VoxelEngine {
 
 		// Update is called once per frame
 		void Update () {
-			UIHandler.SetLoadQueueCount(LoadRenderChunkQueue.Count);
 
 			Vector2 currentChunkPos = GlobalPosToChunkCoord(transform.position);
 			if (currentChunkPos != CenterChunkPos) {
