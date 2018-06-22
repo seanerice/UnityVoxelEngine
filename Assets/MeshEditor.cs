@@ -37,17 +37,17 @@ namespace VoxelEngine {
 				for (int y = 0; y < 16; y++) {
 					for (int z = 0; z < 16; z++) {
 						voxelIsRendered[x, y, z] = new OccludeCube();
-						if (x > 0 && voxels[x-1,y,z].VoxelType != (int)VoxelType.None)			// Left
+						if (x > 0 && voxels[x-1,y,z].VoxelType != VoxelType.None)			// Left
 							voxelIsRendered[x, y, z].left = false;
-						if (x < 15 && voxels[x + 1, y, z].VoxelType != (int)VoxelType.None)		// Right
+						if (x < 15 && voxels[x + 1, y, z].VoxelType != VoxelType.None)		// Right
 							voxelIsRendered[x, y, z].right = false;
-						if (y > 0 && voxels[x, y - 1, z].VoxelType != (int)VoxelType.None) 
+						if (y > 0 && voxels[x, y - 1, z].VoxelType != VoxelType.None) 
 							voxelIsRendered[x, y, z].down = false;
-						if (y < 15 && voxels[x, y + 1, z].VoxelType != (int)VoxelType.None)
+						if (y < 15 && voxels[x, y + 1, z].VoxelType != VoxelType.None)
 							voxelIsRendered[x, y, z].up = false;
-						if (z > 0 && voxels[x, y, z - 1].VoxelType != (int)VoxelType.None)
+						if (z > 0 && voxels[x, y, z - 1].VoxelType != VoxelType.None)
 							voxelIsRendered[x, y, z].back = false;
-						if (z < 15 && voxels[x, y, z + 1].VoxelType != (int)VoxelType.None)
+						if (z < 15 && voxels[x, y, z + 1].VoxelType != VoxelType.None)
 							voxelIsRendered[x, y, z].front = false;
 					}
 				}
