@@ -84,18 +84,7 @@ namespace VoxelEngine {
 			NormalList.Add(left);
 			NormalList.Add(left);
 
-			Vector2 uvLower = VoxelUVs.Stone;
-			switch(vt) {
-				case VoxelType.Grass:
-					uvLower = VoxelUVs.GrassSide;
-					break;
-				case VoxelType.Stone:
-					uvLower = VoxelUVs.Stone;
-					break;
-				default:
-					uvLower = VoxelUVs.Stone;
-					break;
-			}
+            Vector2 uvLower = vt.LeftUV;
 
 			UVList.Add(uvLower + _16thRight + _16thUp);
 			UVList.Add(uvLower + _16thUp);
@@ -124,18 +113,7 @@ namespace VoxelEngine {
 			NormalList.Add(right);
 			NormalList.Add(right);
 
-			Vector2 uvLower = VoxelUVs.Stone;
-			switch (vt) {
-				case VoxelType.Grass:
-					uvLower = VoxelUVs.GrassSide;
-					break;
-				case VoxelType.Stone:
-					uvLower = VoxelUVs.Stone;
-					break;
-				default:
-					uvLower = VoxelUVs.Stone;
-					break;
-			}
+            Vector2 uvLower = vt.RightUV;
 
 			UVList.Add(uvLower + _16thRight + _16thUp);
 			UVList.Add(uvLower + _16thUp);
@@ -164,18 +142,7 @@ namespace VoxelEngine {
 			NormalList.Add(up);
 			NormalList.Add(up);
 
-			Vector2 uvLower = VoxelUVs.Stone;
-			switch (vt) {
-				case VoxelType.Grass:
-					uvLower = VoxelUVs.GrassTop;
-					break;
-				case VoxelType.Stone:
-					uvLower = VoxelUVs.Stone;
-					break;
-				default:
-					uvLower = VoxelUVs.Stone;
-					break;
-			}
+            Vector2 uvLower = vt.TopUV;
 
 			UVList.Add(uvLower + _16thRight + _16thUp);
 			UVList.Add(uvLower + _16thUp);
@@ -204,18 +171,7 @@ namespace VoxelEngine {
 			NormalList.Add(down);
 			NormalList.Add(down);
 
-			Vector2 uvLower = VoxelUVs.Stone;
-			switch (vt) {
-				case VoxelType.Grass:
-					uvLower = VoxelUVs.Dirt;
-					break;
-				case VoxelType.Stone:
-					uvLower = VoxelUVs.Stone;
-					break;
-				default:
-					uvLower = VoxelUVs.Stone;
-					break;
-			}
+			Vector2 uvLower = vt.BottomUV;
 
 			UVList.Add(uvLower + _16thRight + _16thUp);
 			UVList.Add(uvLower + _16thUp);
@@ -244,18 +200,7 @@ namespace VoxelEngine {
 			NormalList.Add(front);
 			NormalList.Add(front);
 
-			Vector2 uvLower = VoxelUVs.Stone;
-			switch (vt) {
-				case VoxelType.Grass:
-					uvLower = VoxelUVs.GrassSide;
-					break;
-				case VoxelType.Stone:
-					uvLower = VoxelUVs.Stone;
-					break;
-				default:
-					uvLower = VoxelUVs.Stone;
-					break;
-			}
+            Vector2 uvLower = vt.FrontUV;
 
 			UVList.Add(uvLower + _16thRight + _16thUp);
 			UVList.Add(uvLower + _16thUp);
@@ -284,18 +229,7 @@ namespace VoxelEngine {
 			NormalList.Add(back);
 			NormalList.Add(back);
 
-			Vector2 uvLower = VoxelUVs.Stone;
-			switch (vt) {
-				case VoxelType.Grass:
-					uvLower = VoxelUVs.GrassSide;
-					break;
-				case VoxelType.Stone:
-					uvLower = VoxelUVs.Stone;
-					break;
-				default:
-					uvLower = VoxelUVs.Stone;
-					break;
-			}
+            Vector2 uvLower = vt.BackUV;
 
 			UVList.Add(uvLower + _16thRight + _16thUp);
 			UVList.Add(uvLower + _16thUp);
