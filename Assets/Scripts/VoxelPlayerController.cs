@@ -30,7 +30,7 @@ public class VoxelPlayerController : MonoBehaviour {
             invNorm.Scale(CenterViewPort);
             Vector3 voxelGlobalPos = new Vector3(Mathf.Floor(hitPos.x + invNorm.x), Mathf.Floor(hitPos.y + invNorm.y), Mathf.Floor(hitPos.z + invNorm.z));
             TransparentVoxel.transform.position = voxelGlobalPos;
-            Debug.DrawLine(ray.origin, hitPos, Color.blue, .1f);
+            Debug.DrawLine(ray.origin, hitPos, Color.blue, .01f);
             Debug.Log(hitPos + " " + voxelGlobalPos);
         }
         if (Input.GetKeyDown(KeyCode.Mouse0))
