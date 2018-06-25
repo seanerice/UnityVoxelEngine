@@ -7,6 +7,7 @@ public class EscapeMenuUIController : MonoBehaviour {
 
 	Canvas ThisCanvas;
 	public UnityStandardAssets.Characters.FirstPerson.FirstPersonController FirstPersonController;
+	public VoxelPlayerController PlayerController;
 	public Canvas GraphicsCanvas;
 	public Canvas SoundCanvas;
 	public Canvas DebugCanvas;
@@ -22,8 +23,17 @@ public class EscapeMenuUIController : MonoBehaviour {
 	void Update () {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			ThisCanvas.enabled = !ThisCanvas.isActiveAndEnabled;
-			FirstPersonController.m_MouseLook.UpdateCursorLock();
-			FirstPersonController.enabled = !FirstPersonController.isActiveAndEnabled;
+			PlayerController.enabled = !ThisCanvas.isActiveAndEnabled;
+			if (ThisCanvas.enabled) {
+				FirstPersonController.m_MouseLook.SetCursorLock(!ThisCanvas.isActiveAndEnabled);
+				FirstPersonController.enabled = !FirstPersonController.isActiveAndEnabled;
+				//FirstPersonController.m_MouseLook.UpdateCursorLock();
+			} else {
+				FirstPersonController.enabled = !FirstPersonController.isActiveAndEnabled;
+				FirstPersonController.m_MouseLook.SetCursorLock(!ThisCanvas.isActiveAndEnabled);
+				//FirstPersonController.m_MouseLook.UpdateCursorLock();
+			}
+			
 			DeactivateAllCanvases();
 		}
 	}

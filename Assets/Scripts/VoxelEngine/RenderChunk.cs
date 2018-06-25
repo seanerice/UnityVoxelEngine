@@ -23,7 +23,7 @@ namespace VoxelEngine {
 			// Field initialization
 			RenderChunkSize = new Vector3(16, 16, 16);
 			LowerGlobalCoord = lowerCoord;
-            Debug.Log(LowerGlobalCoord);
+            //Debug.Log(LowerGlobalCoord);
 			Voxels = new Voxel[(int)RenderChunkSize.x, (int)RenderChunkSize.y, (int)RenderChunkSize.z];
 			InitializeEmptyVoxels();
 		}
