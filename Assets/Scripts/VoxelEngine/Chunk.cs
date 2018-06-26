@@ -15,6 +15,8 @@ namespace VoxelEngine {
 			RenderChunks = new RenderChunk[numRenderChunks];
 			for (int i = 0; i < numRenderChunks; i++) {
 				RenderChunks[i] = new RenderChunk(new Vector3(LowerGlobalCoord.x, i * 16, LowerGlobalCoord.z));
+                if (i > 0) RenderChunks[i].Down = RenderChunks[i - 1];
+                if (i < numRenderChunks - 1) RenderChunks[i].Up = RenderChunks[i + 1];
 			}
 		}
 
@@ -26,6 +28,7 @@ namespace VoxelEngine {
 		public void Load(int seed, int variance, float threshold, float scale, int grassThickness, Material mat) {
 			foreach (RenderChunk rc in RenderChunks) {
 				rc.GenerateProceduralTerrain(seed, variance, threshold, scale, grassThickness);
+                rc.InitializeGameObject(mat);
 			}
 			
 		}

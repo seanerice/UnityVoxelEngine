@@ -11,5 +11,10 @@ namespace VoxelEngine {
 		public Voxel Up = null, Down = null, Left = null, Right = null, Front = null, Back = null;
 		public OccludeCube Occlude = new OccludeCube (false);
 		public bool Visited = false;
+
+        public Voxel[] GetNeighbors()
+        {
+            return new Voxel[] { Up, Down, Left, Right, Front, Back };
+        }
 	}
 }

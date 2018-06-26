@@ -15,12 +15,12 @@ namespace VoxelEngine {
 		public Mesh RenderMesh = new Mesh();
 		private MeshFilter MeshFilt;
 		private MeshCollider MeshColl;
-		public bool IsRendered = false;
-		public bool MarkedForRender = false;
+        public bool TerrainGenerated = false;
 
 		public bool MarkedForDestruction { get; set; }
 
 		public Queue<Voxel> BfsVoxelQueue = new Queue<Voxel>();
+        public RenderChunk Up = null, Down = null, Left = null, Right = null, Front = null, Back = null;
 
 		// Constructor
 		public RenderChunk (Vector3 lowerCoord) {
@@ -29,61 +29,62 @@ namespace VoxelEngine {
 			LowerGlobalCoord = lowerCoord;
             //Debug.Log(LowerGlobalCoord);
 			Voxels = new Voxel[(int)RenderChunkSize.x, (int)RenderChunkSize.y, (int)RenderChunkSize.z];
-			IsRendered = false;
 			InitializeEmptyVoxels();
+            InitializeVoxelGrid();
 		}
 
-		public void RunBfs() {
-			if (BfsVoxelQueue.Count > 0) {
-				while (BfsVoxelQueue.Count > 0) {
+        public RenderChunk[] GetNeighbors() {
+            return new RenderChunk[] { Up, Down, Left, Right, Front, Back };
+        }
+
+        public Vector3[] GetDirectionNormal() {
+            return new Vector3[] { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.back, Vector3.forward };
+        }
+
+		public bool RunBfs() {
+			if (BfsVoxelQueue.Count > 0 && BfsVoxelQueue.Count < 4096) {
+                RenderChunk[] rcNeighbors = GetNeighbors();
+                if (Left == null || Right == null || Front == null || Back == null) return false;
+                Vector3[] directions = GetDirectionNormal();
+				while (BfsVoxelQueue.Count > 0 && BfsVoxelQueue.Count < 4096) {
 					Voxel voxel = BfsVoxelQueue.Dequeue();
 					voxel.Visited = true;
-					if (voxel.Right != null && !voxel.Right.Visited) {
-						if (voxel.Right.VoxelType == VoxelType.None) {
-							BfsVoxelQueue.Enqueue(voxel.Right);
-						} else {
-							voxel.Right.Occlude.left = true;
-						}
-					}
-					if (voxel.Up != null && !voxel.Up.Visited) {
-						if (voxel.Up.VoxelType == VoxelType.None) {
-							BfsVoxelQueue.Enqueue(voxel.Up);
-						} else {
-							voxel.Up.Occlude.down = true;
-						}
-					}
-					if (voxel.Left != null && !voxel.Left.Visited) {
-						if (voxel.Left.VoxelType == VoxelType.None) {
-							BfsVoxelQueue.Enqueue(voxel.Left);
-						} else {
-							voxel.Left.Occlude.right = true;
-						}
-					}
-					if (voxel.Down != null && !voxel.Down.Visited) {
-						if (voxel.Down.VoxelType == VoxelType.None) {
-							BfsVoxelQueue.Enqueue(voxel.Down);
-						} else {
-							voxel.Down.Occlude.up = true;
-						}
-					}
-					if (voxel.Front != null && !voxel.Front.Visited) {
-						if (voxel.Front.VoxelType == VoxelType.None) {
-							BfsVoxelQueue.Enqueue(voxel.Right);
-						} else {
-							voxel.Right.Occlude.left = true;
-						}
-					}
-					if (voxel.Back != null && !voxel.Back.Visited && voxel.Back.VoxelType == VoxelType.None) {
-						if (voxel.Back.VoxelType == VoxelType.None) {
-							BfsVoxelQueue.Enqueue(voxel.Back);
-						} else {
-							voxel.Back.Occlude.front = true;
-						}
-					}
+                    Voxel[] localNeighbors = voxel.GetNeighbors();
+                    for (int i = 0; i < 6; i++) {
+                        Voxel neighbor = localNeighbors[i];
+                        if (neighbor != null && !neighbor.Visited) {
+                            neighbor.Visited = true;
+                            if (neighbor.VoxelType == VoxelType.None) {
+                                BfsVoxelQueue.Enqueue(neighbor);
+                            } else {
+                                neighbor.Occlude.SetOppositeOrder(i, true);
+                            }
+                        } else if (neighbor == null && rcNeighbors[i] != null) {    // Neighbors that fall outside of the local array
+                            Vector3 voxelLocal = voxel.LocalPosition + directions[i];
+                            Voxel externalNeighbor = rcNeighbors[i].Voxels[(int)voxelLocal.x/16, (int)voxelLocal.y/16, (int)voxelLocal.z/16];
+                            externalNeighbor.Visited = true;
+                            if (externalNeighbor.VoxelType == VoxelType.None)
+                            {
+                                rcNeighbors[i].BfsVoxelQueue.Enqueue(externalNeighbor);
+                            }
+                            else
+                            {
+                                externalNeighbor.Occlude.SetOppositeOrder(i, true);
+                            }                
+                        }
+                    }
 				}
-
+                Debug.Log(BfsVoxelQueue.Count());
+                return true;
 			}
+            return false;
 		}
+
+        public void Render() {
+            if (TerrainGenerated && RunBfs()) {
+                RefreshChunkMesh();
+            }
+        }
 
 		public void RefreshChunkMesh () {
 			if (!MarkedForDestruction) {
@@ -91,7 +92,6 @@ namespace VoxelEngine {
 				RenderMesh = MeshEditor.MeshFromVoxel16x16x16(Voxels);
 				MeshFilt.mesh = RenderMesh;
 				MeshColl.sharedMesh = RenderMesh;
-				IsRendered = true;
 			}
 		}
 
@@ -120,16 +120,25 @@ namespace VoxelEngine {
 						Voxels[x, y, z].VoxelType = VoxelType.None;
 						Voxels[x, y, z].GlobalPosition = new Vector3(LowerGlobalCoord.x + x, LowerGlobalCoord.y + y, LowerGlobalCoord.z + z);
 						Voxels[x, y, z].LocalPosition = new Vector3(x, y, z);
-						if (x > 0) Voxels[x, y, z].Left = Voxels[x - 1, y, z];
-						if (x < 15) Voxels[x, y, z].Right = Voxels[x + 1, y, z];
-						if (y > 0) Voxels[x, y, z].Down = Voxels[x, y - 1, z];
-						if (y < 15) Voxels[x, y, z].Up = Voxels[x, y + 1, z];
-						if (z > 0) Voxels[x, y, z].Front = Voxels[x, y, z - 1];
-						if (z < 15) Voxels[x, y, z].Back = Voxels[x, y, z + 1];
 					}
 				}
 			}
 		}
+
+        public void InitializeVoxelGrid() {
+            for (int x = 0; x < RenderChunkSize.x; x++) {
+                for (int y = 0; y < RenderChunkSize.y; y++) {
+                    for (int z = 0; z < RenderChunkSize.z; z++) {
+                        if (x > 0) Voxels[x, y, z].Left = Voxels[x - 1, y, z];
+                        if (x < 15) Voxels[x, y, z].Right = Voxels[x + 1, y, z];
+                        if (y > 0) Voxels[x, y, z].Down = Voxels[x, y - 1, z];
+                        if (y < 15) Voxels[x, y, z].Up = Voxels[x, y + 1, z];
+                        if (z > 0) Voxels[x, y, z].Front = Voxels[x, y, z - 1];
+                        if (z < 15) Voxels[x, y, z].Back = Voxels[x, y, z + 1];
+                    }
+                }
+            }
+        }
 
 		public void GenerateProceduralTerrain(int seed, int variance, float threshold, float scale, int grassThickness) {
 			for (int x = 0; x < 16; x++) {
@@ -139,6 +148,7 @@ namespace VoxelEngine {
 					}
 				}
 			}
+            TerrainGenerated = true;
 		}
 
 		public VoxelType Terrain(Vector3 localPosition, int seed, int heightVariance, float scale, int grassThickness, float threshold) {

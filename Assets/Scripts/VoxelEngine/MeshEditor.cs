@@ -10,18 +10,19 @@ namespace VoxelEngine {
 			if (voxels.GetLength(0) != 16 || voxels.GetLength(1) != 16 || voxels.GetLength(2) != 16)
 				throw new Exception("Must pass a 16x16x16 Voxel array.");
 			List<Voxel> VoxelsToRender = new List<Voxel>();
-			OccludeCube[,,] renderVoxel = CreateOccludedMap16x16x16(voxels);
+			//OccludeCube[,,] renderVoxel = CreateOccludedMap16x16x16(voxels);
 			VoxelMeshGenerator meshGenerator = new VoxelMeshGenerator();
 			for (int x = 0; x < 16; x++) {
 				for (int y = 0; y < 16; y++) {
 					for (int z = 0; z < 16; z++) {
-						if (voxels[x, y, z].VoxelType != VoxelType.None) {
-							if (renderVoxel[x, y, z].left) meshGenerator.AddLeftFace(x, y, z, voxels[x, y, z].VoxelType);
-							if (renderVoxel[x, y, z].right) meshGenerator.AddRightFace(x, y, z, voxels[x, y, z].VoxelType);
-							if (renderVoxel[x, y, z].up) meshGenerator.AddTopFace(x, y, z, voxels[x, y, z].VoxelType);
-							if (renderVoxel[x, y, z].down) meshGenerator.AddBottomFace(x, y, z, voxels[x, y, z].VoxelType);
-							if (renderVoxel[x, y, z].front) meshGenerator.AddFrontFace(x, y, z, voxels[x, y, z].VoxelType);
-							if (renderVoxel[x, y, z].back) meshGenerator.AddBackFace(x, y, z, voxels[x, y, z].VoxelType);
+                        Voxel voxel = voxels[x, y, z];
+						if (true) {
+							if (voxel.Occlude.left) meshGenerator.AddLeftFace(x, y, z, voxel.VoxelType);
+							if (voxel.Occlude.right) meshGenerator.AddRightFace(x, y, z, voxel.VoxelType);
+							if (voxel.Occlude.up) meshGenerator.AddTopFace(x, y, z, voxel.VoxelType);
+							if (voxel.Occlude.down) meshGenerator.AddBottomFace(x, y, z, voxel.VoxelType);
+							if (voxel.Occlude.front) meshGenerator.AddFrontFace(x, y, z, voxel.VoxelType);
+							if (voxel.Occlude.back) meshGenerator.AddBackFace(x, y, z, voxel.VoxelType);
 						}
 					}
 				}
@@ -165,6 +166,39 @@ namespace VoxelEngine {
 			front = q;
 			back = q;
 		}
+
+
+        public bool[] GetCubes() {
+            return new bool[] { up, down, left, right, front, back };
+        }
+
+
+        public bool[] GetOppositeOrder() {
+            return new bool[] { down, up, right, left, back, front };
+        }
+
+        public void SetOppositeOrder(int index, bool b) {
+            switch (index) {
+                case 0:
+                    down = b;
+                    break;
+                case 1:
+                    up = b;
+                    break;
+                case 2:
+                    right = b;
+                    break;
+                case 3:
+                    left = b;
+                    break;
+                case 4:
+                    back = b;
+                    break;
+                case 5:
+                    front = b;
+                    break;
+            }
+        }
 
 		public bool up { get; set; }
 		public bool down { get; set; }

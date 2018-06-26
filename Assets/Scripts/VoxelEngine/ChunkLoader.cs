@@ -29,6 +29,7 @@ namespace VoxelEngine {
 		private Queue<RenderChunk> InitializeRenderChunkQueue;
 		private Vector2 CenterChunkPos;
 		private Camera ThisCamera;
+        private float ellapsedTickTime;
 
 		void Start () {
 			CenterChunkPos = GlobalPosToChunkCoord(transform.position);
@@ -43,40 +44,37 @@ namespace VoxelEngine {
 
 		void Update () {
 
-			Vector2 currentChunkPos = GlobalPosToChunkCoord(transform.position);
-			if (currentChunkPos != CenterChunkPos) {
-				LoadNewChunks();
-				CenterChunkPos = currentChunkPos;
-			}
+            Vector2 currentChunkPos = GlobalPosToChunkCoord(transform.position);
+            if (currentChunkPos != CenterChunkPos)
+            {
+                Debug.Log("Loading New Chunk: " + currentChunkPos);
+                LoadNewChunks();
+            }
 
-			if (LoadChunkQueue.Count > 0) {                       // New chunks
-				Chunk chunk = LoadChunkQueue.Dequeue();
-				chunk.Load(Seed, Variance, Threshold, Scale, 5, mat);
-				for (int i = 0; i < 8; i++) {
-					InitializeRenderChunkQueue.Enqueue(chunk.RenderChunks[i]);
-				}
-			}
-			if (UpdateRenderChunkQueue.Count > 0) {                     // Existing chunks
-				RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
-				rc.RefreshChunkMesh();
+            if (LoadChunkQueue.Count > 0)
+            {                       // New chunks
+                Chunk chunk = LoadChunkQueue.Dequeue();
+                chunk.Load(Seed, Variance, Threshold, Scale, 5, mat);
+            }
+            if (UpdateRenderChunkQueue.Count > 0)
+            {                     // Existing chunks
+                RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
+                rc.RefreshChunkMesh();
                 //Debug.Log("Refreshed renderchunk");
-			}
-			if (InitializeRenderChunkQueue.Count > 0) {
-				RenderChunk rc = InitializeRenderChunkQueue.Dequeue();
-				rc.InitializeGameObject(mat);
-				rc.RefreshChunkMesh();
-			}
-		}
+            }
+
+            ellapsedTickTime += Time.deltaTime;
+            if (ellapsedTickTime >= 1) {
+                RenderVisibleChunks();
+                ellapsedTickTime = 0;
+            }
+        }
 
 		void RenderVisibleChunks() {
 			Vector3 offset = new Vector3(8, 8, 8);
 			foreach (Chunk ch in Chunks.Values) {
 				foreach (RenderChunk rc in ch.RenderChunks) {
-					if (!rc.IsRendered  && !rc.MarkedForRender && PositionInFrustum(offset + rc.LowerGlobalCoord, 8)) {
-						Debug.Log(InitializeRenderChunkQueue.Count);
-						InitializeRenderChunkQueue.Enqueue(rc);
-						rc.MarkedForRender = true;
-					}
+                    rc.Render();
 				}
 			}
 		}
@@ -99,16 +97,46 @@ namespace VoxelEngine {
 				}
 			}
 
-
 			Vector3 lowerCoordOffset = new Vector3(8, 8, 8);
 			foreach (Vector2 key in newKeys) {
+                Chunk chunk = Chunks[key];
+                Chunk chunkFront, chunkBack, chunkLeft, chunkRight;
+                Chunks.TryGetValue(key + Vector2.down, out chunkFront);
+                Chunks.TryGetValue(key + Vector2.up, out chunkBack);
+                Chunks.TryGetValue(key + Vector2.left, out chunkLeft);
+                Chunks.TryGetValue(key + Vector2.right, out chunkRight);
+                for (int i = 0; i < 8; i++) {
+                    RenderChunk rc = chunk.RenderChunks[i];
+                    if (chunkFront != null) {
+                        rc.Front = chunkFront.RenderChunks[i];
+                        chunkFront.RenderChunks[i].Back = rc;
+                    }
+                    if (chunkBack != null) {
+                        rc.Back = chunkBack.RenderChunks[i];
+                        chunkBack.RenderChunks[i].Front = rc;
+                    }
+                    if (chunkLeft != null) {
+                        rc.Left = chunkLeft.RenderChunks[i];
+                        chunkLeft.RenderChunks[i].Right = rc;
+                    }
+                    if (chunkRight != null) {
+                        rc.Right = chunkRight.RenderChunks[i];
+                        chunkRight.RenderChunks[i].Left = rc;
+                    }
+                }
 				LoadChunkQueue.Enqueue(Chunks[key]);
 			}
 
 			foreach (Vector2 key in existingKeys) { // At this point existing keys contains only chunks to be destroyed
 				DestroyOldChunk(key);
 			}
-		}
+
+            Vector2 currentChunkPos = GlobalPosToChunkCoord(transform.position);
+            CenterChunkPos = currentChunkPos;
+            RenderChunk bfsStartChunk = Chunks[currentChunkPos].GetRenderChunkByCoord(transform.position);
+            Vector3 vindex = bfsStartChunk.GlobalToIndex(transform.position);
+            bfsStartChunk.BfsVoxelQueue.Enqueue(bfsStartChunk.Voxels[(int)vindex.x, (int)vindex.y, (int)vindex.z]);
+        }
 
 		public void DestroyOldChunk(Vector2 chunkPos) {
 			Chunk chunk;
