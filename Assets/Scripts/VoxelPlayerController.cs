@@ -23,6 +23,7 @@ public class VoxelPlayerController : MonoBehaviour {
         Ray ray = ControllerCamera.ViewportPointToRay(CenterViewPort);
         if (Physics.Raycast(ray, out LastRaycastHit, MaxRaycastDist))
         {
+			TransparentVoxel.SetActive(true);
             Vector3 hitPos = LastRaycastHit.point;
             Vector3 normal = LastRaycastHit.normal;
             Vector3 invNorm = Vector3.one - normal;
@@ -30,9 +31,11 @@ public class VoxelPlayerController : MonoBehaviour {
             invNorm.Scale(CenterViewPort);
             Vector3 voxelGlobalPos = new Vector3(Mathf.Floor(hitPos.x + invNorm.x), Mathf.Floor(hitPos.y + invNorm.y), Mathf.Floor(hitPos.z + invNorm.z));
             TransparentVoxel.transform.position = voxelGlobalPos;
-            Debug.DrawLine(ray.origin, hitPos, Color.blue, .01f);
-            Debug.Log(hitPos + " " + voxelGlobalPos);
-        }
+            //Debug.DrawLine(ray.origin, hitPos, Color.blue, .01f);
+            //Debug.Log(hitPos + " " + voxelGlobalPos);
+        } else {
+			TransparentVoxel.SetActive(false);
+		}
         if (Input.GetKeyDown(KeyCode.Mouse0))
             OnLeftMouse();
         if (Input.GetKeyDown(KeyCode.Mouse1))

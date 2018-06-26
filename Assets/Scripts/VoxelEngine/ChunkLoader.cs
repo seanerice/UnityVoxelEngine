@@ -119,6 +119,28 @@ namespace VoxelEngine {
 		//	}
 		//}
 
+		public void SetRenderDistance(float f) {
+			RenderDistance = (int)f;
+			ForceFullChunkRefresh();
+		}
+
+		public void ForceFullChunkRefresh() {
+			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+			foreach (Chunk chunk in Chunks.Values) {
+				chunk.Destroy();
+			}
+			stopwatch.Stop();
+			Debug.Log(stopwatch.ElapsedMilliseconds);
+			stopwatch = System.Diagnostics.Stopwatch.StartNew();
+			Chunks.Clear();
+			LoadRenderChunkQueue.Clear();
+			UpdateRenderChunkQueue.Clear();
+			stopwatch.Stop();
+			Debug.Log(stopwatch.ElapsedMilliseconds);
+
+			LoadNewChunks();
+		}
+
         public bool AddBlock(Vector3 globalPos, VoxelType voxelType)
         {
             Vector2 chunkPos = GlobalPosToChunkCoord(globalPos);
