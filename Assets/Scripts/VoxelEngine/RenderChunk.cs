@@ -10,13 +10,17 @@ namespace VoxelEngine {
 
 		// Private
 		private Vector3 RenderChunkSize = new Vector3(16, 16, 16);
-		private Voxel[,,] Voxels;
+		public Voxel[,,] Voxels;
 		public GameObject RenderObject;
 		public Mesh RenderMesh = new Mesh();
 		private MeshFilter MeshFilt;
 		private MeshCollider MeshColl;
+		public bool IsRendered = false;
+		public bool MarkedForRender = false;
 
 		public bool MarkedForDestruction { get; set; }
+
+		public RenderChunk Up, Down, Left, Right, Front, Back;
 
 		// Constructor
 		public RenderChunk (Vector3 lowerCoord) {
@@ -25,6 +29,7 @@ namespace VoxelEngine {
 			LowerGlobalCoord = lowerCoord;
             //Debug.Log(LowerGlobalCoord);
 			Voxels = new Voxel[(int)RenderChunkSize.x, (int)RenderChunkSize.y, (int)RenderChunkSize.z];
+			IsRendered = false;
 			InitializeEmptyVoxels();
 		}
 
@@ -34,6 +39,7 @@ namespace VoxelEngine {
 				RenderMesh = MeshEditor.MeshFromVoxel16x16x16(Voxels);
 				MeshFilt.mesh = RenderMesh;
 				MeshColl.sharedMesh = RenderMesh;
+				IsRendered = true;
 			}
 		}
 

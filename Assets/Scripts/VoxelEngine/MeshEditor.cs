@@ -33,12 +33,14 @@ namespace VoxelEngine {
 			if (voxels.GetLength(0) != 16 || voxels.GetLength(1) != 16 || voxels.GetLength(2) != 16)
 				throw new Exception("Must pass a 16x16x16 Voxel array.");
 			OccludeCube[,,] voxelIsRendered = new OccludeCube[16, 16, 16];
+
 			for (int x = 0; x < 16; x++) {
 				for (int y = 0; y < 16; y++) {
 					for (int z = 0; z < 16; z++) {
 						voxelIsRendered[x, y, z] = new OccludeCube();
 						if (x > 0 && voxels[x-1,y,z].VoxelType != VoxelType.None)			// Left
 							voxelIsRendered[x, y, z].left = false;
+						else if (x == 0)
 						if (x < 15 && voxels[x + 1, y, z].VoxelType != VoxelType.None)		// Right
 							voxelIsRendered[x, y, z].right = false;
 						if (y > 0 && voxels[x, y - 1, z].VoxelType != VoxelType.None) 

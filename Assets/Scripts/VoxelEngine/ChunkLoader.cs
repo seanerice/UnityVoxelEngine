@@ -24,15 +24,19 @@ namespace VoxelEngine {
 
 		// Private
 		private Dictionary<Vector2, Chunk> Chunks;
-		private Queue<RenderChunk> LoadRenderChunkQueue;
+		private Queue<Chunk> LoadChunkQueue;
 		private Queue<RenderChunk> UpdateRenderChunkQueue;
+		private Queue<RenderChunk> InitializeRenderChunkQueue;
 		private Vector2 CenterChunkPos;
+		private Camera ThisCamera;
 
 		void Start () {
 			CenterChunkPos = GlobalPosToChunkCoord(transform.position);
 			Chunks = new Dictionary<Vector2, Chunk>();
-			LoadRenderChunkQueue = new Queue<RenderChunk>();
+			LoadChunkQueue = new Queue<Chunk>();
 			UpdateRenderChunkQueue = new Queue<RenderChunk>();
+			InitializeRenderChunkQueue = new Queue<RenderChunk>();
+			ThisCamera = gameObject.GetComponentInChildren<Camera>();
 
 			LoadNewChunks();
 		}
@@ -45,25 +49,39 @@ namespace VoxelEngine {
 				CenterChunkPos = currentChunkPos;
 			}
 
-			if (LoadRenderChunkQueue.Count > 0) {                       // New chunks
-				RenderChunk rc = LoadRenderChunkQueue.Dequeue();
-				rc.GenerateProceduralTerrain(Seed, Variance, Threshold, Scale, 5);
-				rc.InitializeGameObject(mat);
-				rc.RefreshChunkMesh();
-				if (LoadRenderChunkQueue.Count == 0)
-					GC.Collect();
+			if (LoadChunkQueue.Count > 0) {                       // New chunks
+				Chunk chunk = LoadChunkQueue.Dequeue();
+				chunk.Load(Seed, Variance, Threshold, Scale, 5, mat);
+				for (int i = 0; i < 8; i++) {
+					InitializeRenderChunkQueue.Enqueue(chunk.RenderChunks[i]);
+				}
 			}
 			if (UpdateRenderChunkQueue.Count > 0) {                     // Existing chunks
 				RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
 				rc.RefreshChunkMesh();
                 //Debug.Log("Refreshed renderchunk");
 			}
+			if (InitializeRenderChunkQueue.Count > 0) {
+				RenderChunk rc = InitializeRenderChunkQueue.Dequeue();
+				rc.InitializeGameObject(mat);
+				rc.RefreshChunkMesh();
+			}
+		}
 
-
+		void RenderVisibleChunks() {
+			Vector3 offset = new Vector3(8, 8, 8);
+			foreach (Chunk ch in Chunks.Values) {
+				foreach (RenderChunk rc in ch.RenderChunks) {
+					if (!rc.IsRendered  && !rc.MarkedForRender && PositionInFrustum(offset + rc.LowerGlobalCoord, 8)) {
+						Debug.Log(InitializeRenderChunkQueue.Count);
+						InitializeRenderChunkQueue.Enqueue(rc);
+						rc.MarkedForRender = true;
+					}
+				}
+			}
 		}
 
 		void LoadNewChunks() {
-			//Debug.Log(GlobalPosToChunkCoord(transform.position));
 			Vector2[] spiralPoints = GenerateSpiralPoints(((RenderDistance-1)*2+1) * ((RenderDistance - 1) * 2 + 1)).ToArray();
 			List<Vector2> existingKeys = Chunks.Keys.ToList();
 			List<Vector2> newKeys = new List<Vector2>();
@@ -79,21 +97,15 @@ namespace VoxelEngine {
 				} else {
 					existingKeys.Remove(chunkPos);
 				}
-				//Debug.Log(chunkPos);
 			}
 
 
-
+			Vector3 lowerCoordOffset = new Vector3(8, 8, 8);
 			foreach (Vector2 key in newKeys) {
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[3]);
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[4]);
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[5]);
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[2]);
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[1]);
-				LoadRenderChunkQueue.Enqueue(Chunks[key].RenderChunks[0]);
+				LoadChunkQueue.Enqueue(Chunks[key]);
 			}
 
-			foreach (Vector2 key in existingKeys) {
+			foreach (Vector2 key in existingKeys) { // At this point existing keys contains only chunks to be destroyed
 				DestroyOldChunk(key);
 			}
 		}
@@ -105,19 +117,6 @@ namespace VoxelEngine {
 				Chunks.Remove(chunkPos);
 			}
 		}
-
-		//public void SetChunkSize(float o) {
-		//	int order = (int)o;
-		//	Chunks = new Chunk[order, order];
-		//	OrderOfMagnitude = order;
-		//	int chunksLength = 16 * OrderOfMagnitude;
-		//	for (int x = 0; x < OrderOfMagnitude; x++) {
-		//		for (int z = 0; z < OrderOfMagnitude; z++) {
-		//			Vector3 lowerChunkCoord = new Vector3(x*16 - chunksLength/2, 0, z*16 - chunksLength/2);
-		//			Chunks[x,z] = new Chunk(lowerChunkCoord);
-		//		}
-		//	}
-		//}
 
 		public void SetRenderDistance(float f) {
 			RenderDistance = (int)f;
@@ -133,7 +132,7 @@ namespace VoxelEngine {
 			Debug.Log(stopwatch.ElapsedMilliseconds);
 			stopwatch = System.Diagnostics.Stopwatch.StartNew();
 			Chunks.Clear();
-			LoadRenderChunkQueue.Clear();
+			LoadChunkQueue.Clear();
 			UpdateRenderChunkQueue.Clear();
 			stopwatch.Stop();
 			Debug.Log(stopwatch.ElapsedMilliseconds);
@@ -167,6 +166,20 @@ namespace VoxelEngine {
             return false;
         }
 
+		public bool PositionInFrustum(Vector3 position, float radius) {
+
+			Plane[] planes = GeometryUtility.CalculateFrustumPlanes(ThisCamera);
+
+			for (int i = 0; i < 6; i++) {
+				Vector3 norm = planes[i].normal;
+				if (norm.x * position.x + norm.y * position.y + norm.z * position.z + planes[i].distance <= -radius) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
         public List<Vector2> GenerateSpiralPoints(int points) {
 			List<Vector2> fin = new List<Vector2>();
 			Vector2[] directions = {Vector2.right, Vector2.up, Vector2.left, Vector2.down };
@@ -190,7 +203,7 @@ namespace VoxelEngine {
 			}
 		}
 
-		public Vector2 GlobalPosToChunkCoord(Vector3 globalPos) {
+		public static Vector2 GlobalPosToChunkCoord(Vector3 globalPos) {
 			return new Vector2(Mathf.Floor(globalPos.x/16), Mathf.Floor(globalPos.z/16));
 		}
 	}

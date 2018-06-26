@@ -23,6 +23,13 @@ namespace VoxelEngine {
 			return RenderChunks[(int)coord.y / 16];
 		}
 
+		public void Load(int seed, int variance, float threshold, float scale, int grassThickness, Material mat) {
+			foreach (RenderChunk rc in RenderChunks) {
+				rc.GenerateProceduralTerrain(seed, variance, threshold, scale, grassThickness);
+			}
+			
+		}
+
 		public void Destroy() {
 			foreach (RenderChunk rc in RenderChunks) {
 				Mesh.Destroy(rc.RenderMesh);
