@@ -156,6 +156,16 @@ namespace VoxelEngine {
 			front = true;
 			back = true;
 		}
+
+		public OccludeCube(bool q) {
+			up = q;
+			down = q;
+			left = q;
+			right = q;
+			front = q;
+			back = q;
+		}
+
 		public bool up { get; set; }
 		public bool down { get; set; }
 		public bool left { get; set; }

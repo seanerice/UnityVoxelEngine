@@ -20,7 +20,7 @@ namespace VoxelEngine {
 
 		public bool MarkedForDestruction { get; set; }
 
-		public RenderChunk Up, Down, Left, Right, Front, Back;
+		public Queue<Voxel> BfsVoxelQueue = new Queue<Voxel>();
 
 		// Constructor
 		public RenderChunk (Vector3 lowerCoord) {
@@ -31,6 +31,58 @@ namespace VoxelEngine {
 			Voxels = new Voxel[(int)RenderChunkSize.x, (int)RenderChunkSize.y, (int)RenderChunkSize.z];
 			IsRendered = false;
 			InitializeEmptyVoxels();
+		}
+
+		public void RunBfs() {
+			if (BfsVoxelQueue.Count > 0) {
+				while (BfsVoxelQueue.Count > 0) {
+					Voxel voxel = BfsVoxelQueue.Dequeue();
+					voxel.Visited = true;
+					if (voxel.Right != null && !voxel.Right.Visited) {
+						if (voxel.Right.VoxelType == VoxelType.None) {
+							BfsVoxelQueue.Enqueue(voxel.Right);
+						} else {
+							voxel.Right.Occlude.left = true;
+						}
+					}
+					if (voxel.Up != null && !voxel.Up.Visited) {
+						if (voxel.Up.VoxelType == VoxelType.None) {
+							BfsVoxelQueue.Enqueue(voxel.Up);
+						} else {
+							voxel.Up.Occlude.down = true;
+						}
+					}
+					if (voxel.Left != null && !voxel.Left.Visited) {
+						if (voxel.Left.VoxelType == VoxelType.None) {
+							BfsVoxelQueue.Enqueue(voxel.Left);
+						} else {
+							voxel.Left.Occlude.right = true;
+						}
+					}
+					if (voxel.Down != null && !voxel.Down.Visited) {
+						if (voxel.Down.VoxelType == VoxelType.None) {
+							BfsVoxelQueue.Enqueue(voxel.Down);
+						} else {
+							voxel.Down.Occlude.up = true;
+						}
+					}
+					if (voxel.Front != null && !voxel.Front.Visited) {
+						if (voxel.Front.VoxelType == VoxelType.None) {
+							BfsVoxelQueue.Enqueue(voxel.Right);
+						} else {
+							voxel.Right.Occlude.left = true;
+						}
+					}
+					if (voxel.Back != null && !voxel.Back.Visited && voxel.Back.VoxelType == VoxelType.None) {
+						if (voxel.Back.VoxelType == VoxelType.None) {
+							BfsVoxelQueue.Enqueue(voxel.Back);
+						} else {
+							voxel.Back.Occlude.front = true;
+						}
+					}
+				}
+
+			}
 		}
 
 		public void RefreshChunkMesh () {
@@ -68,6 +120,12 @@ namespace VoxelEngine {
 						Voxels[x, y, z].VoxelType = VoxelType.None;
 						Voxels[x, y, z].GlobalPosition = new Vector3(LowerGlobalCoord.x + x, LowerGlobalCoord.y + y, LowerGlobalCoord.z + z);
 						Voxels[x, y, z].LocalPosition = new Vector3(x, y, z);
+						if (x > 0) Voxels[x, y, z].Left = Voxels[x - 1, y, z];
+						if (x < 15) Voxels[x, y, z].Right = Voxels[x + 1, y, z];
+						if (y > 0) Voxels[x, y, z].Down = Voxels[x, y - 1, z];
+						if (y < 15) Voxels[x, y, z].Up = Voxels[x, y + 1, z];
+						if (z > 0) Voxels[x, y, z].Front = Voxels[x, y, z - 1];
+						if (z < 15) Voxels[x, y, z].Back = Voxels[x, y, z + 1];
 					}
 				}
 			}
