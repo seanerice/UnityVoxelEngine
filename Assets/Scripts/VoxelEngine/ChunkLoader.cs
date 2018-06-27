@@ -64,7 +64,7 @@ namespace VoxelEngine {
             }
 
             ellapsedTickTime += Time.deltaTime;
-            if (ellapsedTickTime >= 1) {
+            if (ellapsedTickTime >= 1/20) {
                 RenderVisibleChunks();
                 ellapsedTickTime = 0;
             }
@@ -74,7 +74,7 @@ namespace VoxelEngine {
 			Vector3 offset = new Vector3(8, 8, 8);
 			foreach (Chunk ch in Chunks.Values) {
 				foreach (RenderChunk rc in ch.RenderChunks) {
-                    rc.Render();
+					if (rc.Render()) return;
 				}
 			}
 		}

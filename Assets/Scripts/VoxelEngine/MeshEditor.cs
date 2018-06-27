@@ -192,10 +192,10 @@ namespace VoxelEngine {
                     left = b;
                     break;
                 case 4:
-                    back = b;
+                    front = b;
                     break;
                 case 5:
-                    front = b;
+                    back = b;
                     break;
             }
         }

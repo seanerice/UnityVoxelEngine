@@ -38,7 +38,7 @@ namespace VoxelEngine {
         }
 
         public Vector3[] GetDirectionNormal() {
-            return new Vector3[] { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.back, Vector3.forward };
+            return new Vector3[] { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.back, Vector3.back };
         }
 
 		public bool RunBfs() {
@@ -53,25 +53,23 @@ namespace VoxelEngine {
                     for (int i = 0; i < 6; i++) {
                         Voxel neighbor = localNeighbors[i];
                         if (neighbor != null && !neighbor.Visited) {
-                            neighbor.Visited = true;
+                            
                             if (neighbor.VoxelType == VoxelType.None) {
-                                BfsVoxelQueue.Enqueue(neighbor);
+								neighbor.Visited = true;
+								BfsVoxelQueue.Enqueue(neighbor);
                             } else {
                                 neighbor.Occlude.SetOppositeOrder(i, true);
                             }
                         } else if (neighbor == null && rcNeighbors[i] != null) {    // Neighbors that fall outside of the local array
-                            Vector3 voxelLocal = voxel.LocalPosition + directions[i];
-                            Voxel externalNeighbor = rcNeighbors[i].Voxels[(int)voxelLocal.x/16, (int)voxelLocal.y/16, (int)voxelLocal.z/16];
-                            externalNeighbor.Visited = true;
-                            if (externalNeighbor.VoxelType == VoxelType.None)
-                            {
-                                rcNeighbors[i].BfsVoxelQueue.Enqueue(externalNeighbor);
-                            }
-                            else
-                            {
-                                externalNeighbor.Occlude.SetOppositeOrder(i, true);
-                            }                
-                        }
+							Vector3 voxelLocal = voxel.LocalPosition + directions[i];
+							Voxel externalNeighbor = rcNeighbors[i].Voxels[(int)voxelLocal.x / 16, (int)voxelLocal.y / 16, (int)voxelLocal.z / 16];
+							if (externalNeighbor.VoxelType == VoxelType.None && !externalNeighbor.Visited) {
+								externalNeighbor.Visited = true;
+								rcNeighbors[i].BfsVoxelQueue.Enqueue(externalNeighbor);
+							} else if (externalNeighbor.VoxelType != VoxelType.None) {
+								externalNeighbor.Occlude.SetOppositeOrder(i, true);
+							}
+						}
                     }
 				}
                 Debug.Log(BfsVoxelQueue.Count());
@@ -80,10 +78,12 @@ namespace VoxelEngine {
             return false;
 		}
 
-        public void Render() {
+        public bool Render() {
             if (TerrainGenerated && RunBfs()) {
                 RefreshChunkMesh();
+				return true;
             }
+			return false;
         }
 
 		public void RefreshChunkMesh () {
