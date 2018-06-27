@@ -58,8 +58,12 @@ namespace VoxelEngine {
             }
             if (UpdateRenderChunkQueue.Count > 0)
             {                     // Existing chunks
-                RenderChunk rc = UpdateRenderChunkQueue.Dequeue();
-                rc.RefreshChunkMesh();
+                RenderChunk rc = UpdateRenderChunkQueue.Peek();
+                if (rc.TerrainGenerated) {
+                    UpdateRenderChunkQueue.Dequeue();
+                    rc.Render();
+                }
+                //rc.RefreshChunkMesh();
                 //Debug.Log("Refreshed renderchunk");
             }
 
@@ -72,7 +76,9 @@ namespace VoxelEngine {
 
 		void RenderVisibleChunks() {
 			Vector3 offset = new Vector3(8, 8, 8);
-			foreach (Chunk ch in Chunks.Values) {
+            Vector3 pos = transform.position;
+			foreach (Vector2 key in Chunks.Keys.OrderBy(k => Mathf.Sqrt( Mathf.Pow(pos.x-(k.x*16), 2) + Mathf.Pow(pos.z-(k.y*16), 2)))) {
+                Chunk ch = Chunks[key];
 				foreach (RenderChunk rc in ch.RenderChunks) {
 					if (rc.Render()) return;
 				}
@@ -136,6 +142,14 @@ namespace VoxelEngine {
             RenderChunk bfsStartChunk = Chunks[currentChunkPos].GetRenderChunkByCoord(transform.position);
             Vector3 vindex = bfsStartChunk.GlobalToIndex(transform.position);
             bfsStartChunk.BfsVoxelQueue.Enqueue(bfsStartChunk.Voxels[(int)vindex.x, (int)vindex.y, (int)vindex.z]);
+
+            Vector3 pos = transform.position;
+			foreach (Vector2 key in Chunks.Keys.OrderBy(k => Mathf.Sqrt( Mathf.Pow(pos.x-(k.x*16), 2) + Mathf.Pow(pos.z-(k.y*16), 2)))) {
+                Chunk ch = Chunks[key];
+				foreach (RenderChunk rc in ch.RenderChunks) {
+                    UpdateRenderChunkQueue.Enqueue(rc);
+				}
+			}
         }
 
 		public void DestroyOldChunk(Vector2 chunkPos) {

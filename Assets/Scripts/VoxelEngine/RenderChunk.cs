@@ -48,7 +48,7 @@ namespace VoxelEngine {
                 Vector3[] directions = GetDirectionNormal();
 				while (BfsVoxelQueue.Count > 0 && BfsVoxelQueue.Count < 4096) {
 					Voxel voxel = BfsVoxelQueue.Dequeue();
-					voxel.Visited = true;
+                    if (voxel.VoxelType == VoxelType.None) voxel.Visited = true;
                     Voxel[] localNeighbors = voxel.GetNeighbors();
                     for (int i = 0; i < 6; i++) {
                         Voxel neighbor = localNeighbors[i];
@@ -62,13 +62,15 @@ namespace VoxelEngine {
                             }
                         } else if (neighbor == null && rcNeighbors[i] != null) {    // Neighbors that fall outside of the local array
 							Vector3 voxelLocal = voxel.LocalPosition + directions[i];
-							Voxel externalNeighbor = rcNeighbors[i].Voxels[(int)voxelLocal.x / 16, (int)voxelLocal.y / 16, (int)voxelLocal.z / 16];
-							if (externalNeighbor.VoxelType == VoxelType.None && !externalNeighbor.Visited) {
+							Voxel externalNeighbor = rcNeighbors[i].Voxels[mod((int)voxelLocal.x, 16), mod((int)voxelLocal.y, 16), mod((int)voxelLocal.z, 16)];
+                            if (!externalNeighbor.Visited) {
+                                if (externalNeighbor.VoxelType == VoxelType.None) {
 								externalNeighbor.Visited = true;
 								rcNeighbors[i].BfsVoxelQueue.Enqueue(externalNeighbor);
-							} else if (externalNeighbor.VoxelType != VoxelType.None) {
-								externalNeighbor.Occlude.SetOppositeOrder(i, true);
-							}
+							    } else if (externalNeighbor.VoxelType != VoxelType.None) {
+								    externalNeighbor.Occlude.SetOppositeOrder(i, true);
+							    }
+                            }
 						}
                     }
 				}
@@ -77,6 +79,12 @@ namespace VoxelEngine {
 			}
             return false;
 		}
+
+        int mod(int x, int m)
+        {
+            int r = x % m;
+            return r < 0 ? r + m : r;
+        }
 
         public bool Render() {
             if (TerrainGenerated && RunBfs()) {
@@ -135,6 +143,18 @@ namespace VoxelEngine {
                         if (y < 15) Voxels[x, y, z].Up = Voxels[x, y + 1, z];
                         if (z > 0) Voxels[x, y, z].Front = Voxels[x, y, z - 1];
                         if (z < 15) Voxels[x, y, z].Back = Voxels[x, y, z + 1];
+                    }
+                }
+            }
+        }
+
+        public void ResetVoxelGrid() {
+            for (int x = 0; x < RenderChunkSize.x; x++) {
+                for (int y = 0; y < RenderChunkSize.y; y++) {
+                    for (int z = 0; z < RenderChunkSize.z; z++) {
+                        Voxel voxel = Voxels[x, y, z];
+                        voxel.Visited = false;
+                        voxel.Occlude = new OccludeCube(false);
                     }
                 }
             }
@@ -218,7 +238,10 @@ namespace VoxelEngine {
             {
                 if (Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType == VoxelType.None)                                               // Add to only a null voxel
                 {
-                    Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType = voxelType;
+                    ResetVoxelGrid();
+                    Voxel voxel = Voxels[(int)local.x, (int)local.y, (int)local.z];
+                    voxel.VoxelType = voxelType;
+                    BfsVoxelQueue.Enqueue(voxel);
                     return true;
                 }   
             }
@@ -233,7 +256,10 @@ namespace VoxelEngine {
             {
                 if (Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType != VoxelType.None)               // Remove from a non-null voxel.
                 {
-                    Voxels[(int)local.x, (int)local.y, (int)local.z].VoxelType = VoxelType.None;
+                    ResetVoxelGrid();
+                    Voxel voxel = Voxels[(int)local.x, (int)local.y, (int)local.z];
+                    voxel.VoxelType = VoxelType.None;
+                    BfsVoxelQueue.Enqueue(voxel);
                     return true;
                 }
             }
